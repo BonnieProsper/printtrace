@@ -11,7 +11,7 @@ from __future__ import annotations
 import inspect
 import threading
 
-from src.printtrace._types import CallContext
+from ._types import CallContext
 
 # Internal constant: how many frames to skip to reach the user callsite.
 # This is deliberately conservative and tested.

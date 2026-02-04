@@ -19,7 +19,7 @@ def test_multiple_values_default_sep():
     printtrace("a", "b", 3, file=buf)
 
     out = buf.getvalue()
-    assert "a b 3" in out
+    assert "'a' 'b' 3" in out
 
 
 def test_custom_separator():
@@ -27,7 +27,7 @@ def test_custom_separator():
     printtrace("a", "b", sep=", ", file=buf)
 
     out = buf.getvalue()
-    assert "a, b" in out
+    assert "'a', 'b'" in out
 
 
 def test_custom_end():

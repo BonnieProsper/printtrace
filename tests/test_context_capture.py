@@ -28,23 +28,16 @@ def test_filename_and_function_name():
 def test_line_number_is_reasonable():
     buf = io.StringIO()
 
-    # Capture expected line number dynamically
     expected_line = inspect.currentframe().f_lineno + 2
     printtrace("x", file=buf)
 
     out = buf.getvalue()
 
-    # Extract the portion containing :<lineno>
-    # We don't parse rigidly; we assert presence and sanity
-    parts = out.split(":")
-    assert len(parts) >= 2
+    # Extract last :<lineno>
+    before, after = out.rsplit(":", 1)
+    lineno_str = after.split()[0]
 
-    try:
-        lineno = int(parts[1].split()[0])
-    except ValueError:
-        assert False, "Line number not found in output"
-
-    # Line number should be close to where we called printtrace
+    lineno = int(lineno_str)
     assert abs(lineno - expected_line) <= 2
 
 
