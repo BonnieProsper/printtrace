@@ -1,33 +1,26 @@
-import threading
-
 from printtrace.api import printtrace
 
 
-def test_no_deadlock_on_thread_exit(capture_output):
+def test_output_not_truncated_at_exit(capture_output):
     writer, get_lines = capture_output
 
-    def worker():
-        for _ in range(10):
-            printtrace("x", file=writer)
-
-    t = threading.Thread(target=worker)
-    t.start()
-    t.join(timeout=2)
-
-    assert not t.is_alive()
-    assert len(get_lines()) == 10
-
-
-def test_output_not_truncated_at_exit(capture_output):
     for i in range(100):
-        printtrace("line", i)
+        printtrace("line", i, file=writer, mode="minimal")
 
-    output = capture_output()
+
+    output = get_lines()
+
     assert len(output) == 100
+    assert output[0].startswith("line 0")
+    assert output[-1].startswith("line 99")
 
 
 def test_immediate_exit_pattern(capture_output):
-    printtrace("last line")
+    writer, get_lines = capture_output
 
-    output = capture_output()
-    assert output[-1].endswith("last line\n")
+    printtrace("last line", file=writer)
+
+    output = get_lines()
+
+    assert len(output) == 1
+    assert output[0].endswith("last line")

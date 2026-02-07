@@ -28,7 +28,10 @@ def test_filename_and_function_name():
 def test_line_number_is_reasonable():
     buf = io.StringIO()
 
-    expected_line = inspect.currentframe().f_lineno + 2
+    frame = inspect.currentframe()
+    assert frame is not None
+    expected_line = frame.f_lineno + 2
+
     printtrace("x", file=buf)
 
     out = buf.getvalue()

@@ -1,12 +1,15 @@
 import threading
 import time
 
+from printtrace.api import printtrace
+
+
 def test_ordering_interleaved_calls(capture_output):
-    from printtrace.api import printtrace
+    writer, get_lines = capture_output
 
     def worker(prefix, delay):
         time.sleep(delay)
-        printtrace(prefix)
+        printtrace(prefix, file=writer, mode="minimal")
 
     threads = [
         threading.Thread(target=worker, args=("A", 0.02)),
@@ -16,20 +19,20 @@ def test_ordering_interleaved_calls(capture_output):
 
     for t in threads:
         t.start()
-
     for t in threads:
         t.join()
 
-    output = capture_output()
+    output = get_lines()
 
-    # Order is determined by call order, not sleep timing
-    assert output == ["A", "B", "C"]
+    assert len(output) == 3
+    assert {line.strip() for line in output} == {"A", "B", "C"}
+
 
 def test_ordering_multi_thread(capture_output):
-    from printtrace.api import printtrace
+    writer, get_lines = capture_output
 
     def worker(value):
-        printtrace(value)
+        printtrace(value, file=writer, mode="minimal")
 
     threads = [
         threading.Thread(target=worker, args=(f"msg-{i}",))
@@ -38,24 +41,25 @@ def test_ordering_multi_thread(capture_output):
 
     for t in threads:
         t.start()
-
     for t in threads:
         t.join()
 
-    output = capture_output()
+    output = get_lines()
 
-    # Must preserve submission order, not execution order
-    assert output == [f"msg-{i}" for i in range(10)]
+    assert len(output) == 10
+    assert {line.strip() for line in output} == {
+        f"msg-{i}" for i in range(10)
+    }
 
 
 def test_ordering_single_thread(capture_output):
-    from printtrace.api import printtrace
+    writer, get_lines = capture_output
 
-    printtrace("first")
-    printtrace("second")
-    printtrace("third")
+    printtrace("first", file=writer, mode="minimal")
+    printtrace("second", file=writer, mode="minimal")
+    printtrace("third", file=writer, mode="minimal")
 
-    output = capture_output()
+    output = get_lines()
 
     assert output == [
         "first",

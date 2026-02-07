@@ -25,6 +25,9 @@ def capture_output():
         def write(self, data: str) -> None:
             write(data)
 
+        def flush(self) -> None:
+            pass
+
     def get_lines():
         with lock:
             return buffer.getvalue().splitlines()

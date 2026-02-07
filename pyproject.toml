@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+markers = [
+    "timeout: mark test with timeout",
+]
