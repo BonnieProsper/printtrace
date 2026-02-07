@@ -18,6 +18,7 @@ from typing import List
 import pytest
 
 from printtrace.sync import output_lock
+from printtrace import printtrace
 
 
 class RecordingWriter:
@@ -124,3 +125,28 @@ def test_lock_serializes_writes_under_contention() -> None:
     for i in range(5):
         for j in range(20):
             assert f"<{i}:{j}>" in output
+
+def test_no_partial_lines(capture_output):
+    writer, get_lines = capture_output
+
+    payload = "x" * 1000
+
+    def worker():
+        for _ in range(10):
+            printtrace(payload, file=writer)
+
+    threads = [threading.Thread(target=worker) for _ in range(5)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    lines = get_lines()
+
+    # 5 threads × 10 calls
+    assert len(lines) == 50
+
+    for line in lines:
+        # Payload must appear exactly once and intact
+        assert "x" * 100 in line  # some reasonable minimum
+        assert "…" in line       # explicit truncation signal

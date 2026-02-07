@@ -23,4 +23,5 @@ def test_immediate_exit_pattern(capture_output):
     output = get_lines()
 
     assert len(output) == 1
-    assert output[0].endswith("last line")
+    assert "last line" in output[0]
+

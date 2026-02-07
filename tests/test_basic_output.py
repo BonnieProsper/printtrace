@@ -45,3 +45,5 @@ def test_empty_call():
     out = buf.getvalue()
     # Still produces a contextual line
     assert out.strip() != ""
+
+

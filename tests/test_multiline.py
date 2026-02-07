@@ -47,3 +47,12 @@ def test_multiline_under_concurrent_writes():
     # No partial interleaving markers should appear
     # Each worker should produce exactly one trailing newline
     assert out.count("\n") >= 5
+
+def test_long_payload_is_truncated(capture_output):
+    writer, get_lines = capture_output
+
+    printtrace("x" * 10_000, file=writer)
+
+    line = get_lines()[0]
+
+    assert "…" in line
