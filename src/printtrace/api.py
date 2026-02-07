@@ -52,7 +52,7 @@ def printtrace(
     out = sys.stdout if file is None else file
     mode = mode or DEFAULT_MODE
 
-    # 1. Capture call-site context early
+    # Capture call-site context early
     ctx = capture_context()
 
     context_str = (
@@ -61,26 +61,18 @@ def printtrace(
         f"in {ctx.function}"
     )
 
-    # 2. Format values
-    if values:
-        parts = []
-        for v in values:
-            if isinstance(v, str):
-                parts.append(v)
-            else:
-                parts.append(format_value(v))
-        message = sep.join(parts)
+    # Format values
+    if mode == "minimal":
+        message = sep.join(str(v) for v in values)
     else:
-        message = ""
+        message = sep.join(format_value(v) for v in values)
 
-    # 3. Format final output
     formatted = _format_message(
         message=message,
         context=context_str,
         mode=mode,
     )
 
-    # 4. Emit atomically
     with output_lock():
         out.write(formatted + end)
         out.flush()
