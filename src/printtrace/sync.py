@@ -1,52 +1,32 @@
 """
-Synchronization primitives for printtrace.
+Global output lock for printtrace.
 
-This module owns exactly one responsibility:
-- providing a single, global mechanism to make output atomic and ordered
-
-Design constraints (do not violate):
-- one global lock, no queues, no worker threads
-- lock scope must be minimal and explicit
-- no dependency on formatting, context, or stdout details
+Constraints:
+- one lock, no queues, no worker threads
+- lock scope covers only the write() call
+- no imports from formatting, context, or api
 """
 
 from __future__ import annotations
 
 import threading
+from collections.abc import Generator
 from contextlib import contextmanager
 
 
-# A single global lock guarding *entire* output blocks.
-#
-# This is intentionally module-level:
-# - stdout is a process-wide resource
-# - ordering across threads only makes sense globally
-# - debugging output favors correctness over throughput
 _output_lock = threading.Lock()
 
 
 @contextmanager
-def output_lock():
+def output_lock() -> Generator[None, None, None]:
     """
-    Context manager that serializes output.
+    Serialize output across threads.
 
-    Any code that writes a complete trace block to stdout must
-    hold this lock for the entire duration of the write.
-
-    The lock must NOT be held while:
-    - inspecting the call stack
-    - formatting messages
-    - constructing strings
-
-    Ordering guarantee:
-        The order of output blocks is the order in which threads
-        acquire this lock. No stronger guarantee is promised.
+    All formatting must be done before acquiring this lock.
+    Threads acquire in arrival order; that order is the output order.
     """
-    _output_lock.acquire()
-    try:
+    with _output_lock:
         yield
-    finally:
-        _output_lock.release()
 
 
 __all__ = ["output_lock"]
