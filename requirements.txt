@@ -1,1 +1,6 @@
-pytest>=9.0
+# Development dependencies are declared in pyproject.toml under
+# [project.optional-dependencies] dev.
+#
+# Install with:
+#   pip install -e ".[dev]"
+
