@@ -5,6 +5,7 @@ import inspect
 import threading
 
 from printtrace import printtrace
+from printtrace.context import capture_context
 
 
 def _emit(buf: io.StringIO) -> str:
@@ -12,16 +13,16 @@ def _emit(buf: io.StringIO) -> str:
     return buf.getvalue()
 
 
-def test_filename_and_function_name():
+def test_filename_is_basename_only():
     buf = io.StringIO()
-
     out = _emit(buf)
+    assert "test_context_capture.py" in out
+    assert "/src/" not in out
 
-    # Current test file name should appear
-    filename = __file__.split("/")[-1]
-    assert filename in out
 
-    # Function name where printtrace was called
+def test_function_name_in_output():
+    buf = io.StringIO()
+    out = _emit(buf)
     assert "_emit" in out
 
 
@@ -35,19 +36,29 @@ def test_line_number_is_reasonable():
     printtrace("x", file=buf)
 
     out = buf.getvalue()
-
-    # Extract last :<lineno>
     before, after = out.rsplit(":", 1)
-    lineno_str = after.split()[0]
-
-    lineno = int(lineno_str)
+    lineno = int(after.split()[0])
     assert abs(lineno - expected_line) <= 2
 
 
 def test_thread_name():
     buf = io.StringIO()
-
     printtrace("x", file=buf)
-    out = buf.getvalue()
+    assert threading.current_thread().name in buf.getvalue()
 
-    assert threading.current_thread().name in out
+
+def test_skip_zero_captures_capture_context_itself():
+    ctx = capture_context(skip=0)
+    assert "capture_context" in ctx.function
+
+
+def test_huge_skip_returns_fallback():
+    ctx = capture_context(skip=9999)
+    assert ctx.filename == "<unknown>"
+    assert ctx.function == "<unknown>"
+    assert ctx.lineno == 0
+
+
+def test_negative_skip_clamped():
+    ctx = capture_context(skip=-1)
+    assert ctx.function == "capture_context"
