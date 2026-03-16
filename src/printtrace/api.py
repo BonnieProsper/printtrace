@@ -13,6 +13,7 @@ from .context import capture_context
 from .formatting import format_value
 from .sync import output_lock
 
+
 Mode = Literal["verbose", "minimal", "json"]
 _VALID_MODES: frozenset[str] = frozenset({"verbose", "minimal", "json"})
 

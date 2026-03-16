@@ -69,7 +69,7 @@ def test_json_mode_is_valid_json():
     assert "hello" in data["message"]
 
 
-def test_invalid_mode_raises_with_name(monkeypatch):
+def test_invalid_mode_raises_with_name():
     with pytest.raises(ValueError, match="vervose"):
         printtrace("x", mode="vervose")
 
