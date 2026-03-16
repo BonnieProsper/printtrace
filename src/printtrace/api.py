@@ -44,10 +44,10 @@ def printtrace(
     mode: str | None = None,
 ) -> None:
     """
-    Print a trace-safe debugging line with contextual information.
+    Print a trace-safe debugging line with contextual information. 
 
     A deliberate middle ground between print() and logging:
-    thread-safe, ordered, contextual, zero configuration.
+    thread-safe, ordered, contextual, zero configuration. 
     """
     out = sys.stdout if file is None else file
     mode = mode or DEFAULT_MODE
