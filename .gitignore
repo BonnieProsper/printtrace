@@ -12,19 +12,29 @@ env/
 # Test artifacts
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 # Build artifacts
 build/
 dist/
 *.egg-info/
+/src/*.egg-info/
+
+# Type checking
+.mypy_cache/
+
+# Linting
+.ruff_cache/
+
+# Hatch
+.hatch/
 
 # IDEs
 .vscode/
 .idea/
+*.swp
 
 # OS
 .DS_Store
 Thumbs.db
-
-test.py
