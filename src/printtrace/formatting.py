@@ -26,7 +26,7 @@ def format_value(value: Any) -> str:
     """
     Format *value* as a compact, human-readable debug string.
 
-    Always returns a string — never raises.
+    Always returns a string - never raises.
     """
     try:
         return _format(value, depth=0)

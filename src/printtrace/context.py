@@ -67,7 +67,7 @@ def capture_context(skip: int = _SKIP_FRAMES) -> CallContext:
             thread_name=threading.current_thread().name,
         )
     finally:
-        # Break reference cycles — CPython keeps frames alive via f_locals.
+        # Break reference cycles - CPython keeps frames alive via f_locals.
         del frame
 
 

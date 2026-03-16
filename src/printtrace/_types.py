@@ -16,7 +16,7 @@ class CallContext:
     Attributes
     ----------
     filename:
-        Raw ``f_code.co_filename`` — the full path as CPython reports it.
+        Raw ``f_code.co_filename`` - the full path as CPython reports it.
         The displayed output uses only the basename; this field stores the original.
     lineno:
         Line number of the printtrace call within *filename*.
