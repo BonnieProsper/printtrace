@@ -11,7 +11,7 @@ license = { file = "LICENSE" }
 requires-python = ">=3.10"
 keywords = ["debugging", "print", "logging", "threading", "tracing"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
@@ -23,6 +23,10 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = []
+
+[project.urls]
+Repository = "https://github.com/BonnieProsper/printtrace"
+Issues = "https://github.com/BonnieProsper/printtrace/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -60,8 +64,3 @@ select = [
     "SIM", # flake8-simplify
     "ANN", # flake8-annotations
 ]
-ignore = [
-    "ANN101",  # missing type annotation for self
-    "ANN102",  # missing type annotation for cls
-]
-
