@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import threading
 import time
 
-from printtrace.api import printtrace
+from printtrace import printtrace
 
 
 def test_ordering_interleaved_calls(capture_output):
