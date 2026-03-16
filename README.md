@@ -1,25 +1,22 @@
 # printtrace
 
-A tiny, zero-configuration debugging primitive for Python.
+Thread-safe, contextual debug printing for Python.
 
 `printtrace` is a deliberate middle ground between `print()` and `logging`:
 - thread-safe
-- ordered
-- contextual
-- no setup
-- no global configuration
-- no background threads
+- ordered output across threads
+- call-site context included automatically
+- no configuration
 
 ## Why not logging?
 
-Logging is powerful, but heavy:
-- handlers
-- formatters
-- configuration
-- global state
-- surprising defaults
+Logging requires handlers, formatters, and configuration. `printtrace` requires nothing - import and call it.
 
-`printtrace` is for moments when you just want reliable, readable debug output even under concurrency.
+## Installation
+
+```bash
+pip install printtrace
+```
 
 ## Usage
 
@@ -28,43 +25,65 @@ from printtrace import printtrace
 
 printtrace("hello", {"a": 1})
 ```
-Example output:
-```csharp
+
+Output:
+```
 [MainThread] app.py:42 in handler | 'hello' {'a': 1}
 ```
+
 ## Features
 
-- Atomic output
-  Lines never interleave, even across threads.
-- Context included automatically
-  - thread name
-  - filename
-  - line number
-  - function name
-- Defensive formatting
-  Values are rendered using repr-style formatting for safer debugging output.
-- Drop-in friendly
-  Parameters mirror print() where it makes sense.
+- **Atomic output** - lines never interleave, even across threads.
+- **Context included automatically** - thread name, filename, line number, function name.
+- **Defensive formatting** - repr-style output; broken `__repr__` and `__str__` never crash the call.
+- **Drop-in parameters** - `sep`, `end`, `file` behave like `print()`.
 
 ## API
+
 ```python
-printtrace(*values, sep=" ", end="\n", file=None)
+printtrace(*values, sep=" ", end="\n", file=None, mode=None)
 ```
 
-This is the only public API.
+The `Mode` type alias is exported for use in annotations.
+
+### Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `*values` | `object` | - | Values to print |
+| `sep` | `str \| None` | `" "` | Separator (`None` → `" "`) |
+| `end` | `str \| None` | `"\n"` | Terminator (`None` → `"\n"`) |
+| `file` | `TextIO \| None` | `sys.stdout` | Output stream |
+| `mode` | `str \| None` | env var / `"verbose"` | Output mode |
+
+### Raises
+
+`ValueError` - if `mode` (or `PRINTTRACE_MODE`) is not a valid mode.
 
 ## Modes
 
-- verbose (default): contextual, repr-style output
-- minimal: print-compatible output
-- json: structured output (experimental)
+| Mode | Output | Formatting |
+|------|--------|------------|
+| `verbose` (default) | `[Thread] file:line in func \| values` | repr-style |
+| `minimal` | values only | `str()` |
+| `json` | `{"message": "...", "context": "..."}` | repr-style |
 
-You can also set a default mode:
+Set a process-wide default:
+
 ```bash
-PRINTTRACE_MODE=minimal
+PRINTTRACE_MODE=minimal python myapp.py
+```
+
+The variable is read at call time, not import time.
+
+An invalid mode raises immediately:
+
+```python
+printtrace("x", mode="vervose")  # ValueError: Invalid printtrace mode 'vervose'. ...
 ```
 
 ## Threaded debugging
+
 ```python
 import threading
 from printtrace import printtrace
@@ -75,9 +94,9 @@ def worker(i):
 for i in range(5):
     threading.Thread(target=worker, args=(i,)).start()
 ```
+
 ## Testing
 
-printtrace is designed to be easy to test.
 ```python
 def test_output(capture_output):
     writer, get_lines = capture_output
@@ -85,20 +104,48 @@ def test_output(capture_output):
     assert get_lines() == ["hello"]
 ```
 
+The `capture_output` fixture lives in `tests/conftest.py`.
+
+### Testing with environment variables
+
+```python
+def test_env_mode(monkeypatch):
+    monkeypatch.setenv("PRINTTRACE_MODE", "minimal")
+    buf = io.StringIO()
+    printtrace("x", file=buf)
+    assert " | " not in buf.getvalue()
+```
+
+## Writing a wrapper
+
+```python
+from printtrace.context import capture_context, _SKIP_FRAMES
+
+def my_debug(*values, **kwargs):
+    # +1 for the extra frame introduced by my_debug
+    ctx = capture_context(skip=_SKIP_FRAMES + 1)
+    ...
+```
+
+Each additional frame between user code and `capture_context` requires one more skip.
+
 ## When to use
 
 - debugging multithreaded code
-- CLI tools
-- scripts
+- CLI tools and scripts
 - early development
-- replacing temporary print statements
+- replacing temporary `print` statements
 
 ## When not to use
 
 - structured logging pipelines
-- long-running production logging
-- high-volume log ingestion systems
+- long-running production log ingestion
+- high-volume throughput (the global lock serialises all calls)
 
-## License 
+## Contributing
 
-MIT 
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+MIT
